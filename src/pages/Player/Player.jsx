@@ -14,37 +14,36 @@ const Player = () => {
     type: "",
   });
 
-  const options = {
-    method: "GET",
-    headers: {
-      accept: "application/json",
-      Authorization:
-        "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiYWNmYWEwZjUwYTE5OTFhMGVhMjU3NThiZTM1NWU1ZiIsIm5iZiI6MTc1OTA1MTQxNS45NTEsInN1YiI6IjY4ZDhmZTk3ZmI5Mjc0OTMxMmUxYzNmZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.12V7HeEh5JpBWJzhyg8-7FnhY4aTY88e6xPfZKQYsOk",
-    },
-  };
+  const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
   useEffect(() => {
+    if (!id) return;
+
     fetch(
-      `https://api.themoviedb.org/3/movie/${id}/videos?language=en-US`,
-      options
+      `https://api.themoviedb.org/3/movie/${id}/videos?api_key=${API_KEY}&language=en-US`
     )
       .then((res) => res.json())
       .then((res) => {
+        if (!res.results || res.results.length === 0) return;
+
         const trailer = res.results.find(
           (vid) => vid.type === "Trailer" && vid.site === "YouTube"
         );
-        if (trailer) {
-          setApiData(trailer);
-        } else if (res.results.length > 0) {
-          setApiData(res.results[0]); // fallback if no trailer found
-        }
+
+        setApiData(trailer || res.results[0]);
       })
-      .catch((err) => console.error(err));
-  }, [id]);
+      .catch((err) => console.error("TMDB Error:", err));
+  }, [id, API_KEY]);
 
   return (
     <div className="Player">
-      <img src={back_arrow_icon} alt="Back" onClick={() => navigate(-1)} />
+      <img
+        src={back_arrow_icon}
+        alt="Back"
+        onClick={() => navigate(-1)}
+        style={{ cursor: "pointer" }}
+      />
+
       {apiData.key ? (
         <iframe
           width="90%"
@@ -60,6 +59,7 @@ const Player = () => {
           No trailer available for this movie.
         </p>
       )}
+
       <div className="player-info">
         <p>{apiData.published_at?.slice(0, 10)}</p>
         <p>{apiData.name}</p>

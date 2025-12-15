@@ -1,67 +1,81 @@
+body{
+    overflow-x: hidden;
+}
 .title-cards {
-    margin-top: 50px;
-    margin-bottom: 30px;
+  position: relative;
+  margin: 20px 0;
 }
 
 .title-cards h2 {
-    margin-bottom: 12px;
-    font-size: 24px;
+  color: #fff;
+  margin-bottom: 10px;
 }
 
+/* CARD LIST */
 .card-list {
-    display: flex;
-    gap: 12px;
-    overflow-x: auto; /* horizontal scrolling */
-    scroll-behavior: smooth;
-    padding-bottom: 10px;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  cursor: grab;
+}
+
+.card-list:active {
+  cursor: grabbing;
 }
 
 .card-list::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
-.card-list .card {
-    flex: 0 0 auto; /* ensures cards stay inline */
-    position: relative;
-    width: 240px; /* base width */
+/* CARD */
+.card {
+  min-width: 180px;
+  text-decoration: none;
+  color: white;
 }
 
-.card-list img {
-    width: 100%;
-    border-radius: 6px;
-    cursor: pointer;
+.card img {
+  width: 100%;
+  border-radius: 6px;
+  transition: transform 0.3s;
 }
 
-.card-list .card p {
-    position: absolute;
-    bottom: 8px;
-    left: 8px;
-    color: #fff;
-    text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
-    font-size: 14px;
-    margin: 0;
+.card:hover img {
+  transform: scale(1.08);
 }
 
-@media (max-width: 800px) {
-    .title-cards h2 {
-        font-size: 20px;
-    }
-    .card-list .card {
-        width: 200px;
-    }
-    .card-list .card p {
-        font-size: 12px;
-    }
+.card p {
+  font-size: 14px;
+  margin-top: 6px;
 }
 
-@media (max-width: 500px) {
-    .title-cards h2 {
-        font-size: 16px;
-    }
-    .card-list .card {
-        width: 160px;
-    }
-    .card-list .card p {
-        font-size: 10px;
-    }
+/* ARROWS */
+.arrow {
+  position: absolute;
+  top: 55%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: white;
+  font-size: 40px;
+  cursor: pointer;
+  z-index: 10;
+  padding: 8px 12px;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.title-cards:hover .arrow {
+  opacity: 1;
+}
+
+.arrow.left {
+  left: -10px;
+}
+
+.arrow.right {
+  right: -10px;
 }

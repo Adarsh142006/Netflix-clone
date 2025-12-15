@@ -1,64 +1,99 @@
-import React, { useEffect, useRef,useState } from 'react'
-import './TitleCards.css'
-import cards_data from '../../assets/cards/Cards_data'
-import { Link } from 'react-router-dom'
+import React, { useEffect, useRef, useState } from "react";
+import "./TitleCards.css";
+import { Link } from "react-router-dom";
 
-const TitleCards = ({title,category}) => {
-
-  const [apiData, setApiData] = useState([])
-
+const TitleCards = ({ title, category }) => {
+  const [apiData, setApiData] = useState([]);
   const cardsRef = useRef();
 
-  const options = {
-  method: 'GET',
-  headers: {
-    accept: 'application/json',
-    Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiYWNmYWEwZjUwYTE5OTFhMGVhMjU3NThiZTM1NWU1ZiIsIm5iZiI6MTc1OTA1MTQxNS45NTEsInN1YiI6IjY4ZDhmZTk3ZmI5Mjc0OTMxMmUxYzNmZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.12V7HeEh5JpBWJzhyg8-7FnhY4aTY88e6xPfZKQYsOk'
-  }
-};
+  const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
+  /* ---------- FETCH DATA ---------- */
+  useEffect(() => {
+    fetch(
+      `https://api.themoviedb.org/3/movie/${
+        category || "now_playing"
+      }?api_key=${API_KEY}&language=en-US&page=1`
+    )
+      .then((res) => res.json())
+      .then((data) => setApiData(data.results || []))
+      .catch((err) => console.log(err));
+  }, [category, API_KEY]);
 
-
-  const handleWheel = (event) => {
-    event.preventDefault();
-    if (cardsRef.current) {
-      cardsRef.current.scrollLeft += event.deltaY;
-    }
+  /* ---------- ARROW SCROLL ---------- */
+  const scrollLeft = () => {
+    cardsRef.current.scrollBy({ left: -400, behavior: "smooth" });
   };
 
-  useEffect(() => {
+  const scrollRight = () => {
+    cardsRef.current.scrollBy({ left: 400, behavior: "smooth" });
+  };
 
-    fetch(`https://api.themoviedb.org/3/movie/${category?category:"now_playing"}?language=en-US&page=1`, options)
-  .then(res => res.json())
-  .then(res => setApiData(res.results))
-  .catch(err => console.error(err));
+  /* ---------- DRAG SCROLL ---------- */
+  let isDown = false;
+  let startX;
+  let scrollLeftPos;
 
-    const currentRef = cardsRef.current;
-    if (currentRef) {
-      currentRef.addEventListener('wheel', handleWheel);
-    }
+  const startDrag = (e) => {
+    isDown = true;
+    startX = e.pageX - cardsRef.current.offsetLeft;
+    scrollLeftPos = cardsRef.current.scrollLeft;
+  };
 
-     
-    return () => {
-      if (currentRef) {
-        currentRef.removeEventListener('wheel', handleWheel);
-      }
-    };
-  }, []);
+  const stopDrag = () => {
+    isDown = false;
+  };
+
+  const onDrag = (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - cardsRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    cardsRef.current.scrollLeft = scrollLeftPos - walk;
+  };
 
   return (
-    <div className='title-cards'>
-      <h2>{title?title:"Popular on Netflix"}</h2>
-      <div className="card-list" ref={cardsRef}>
-        {apiData.map((card, index) => (
-          <Link to={`/player/${card.id}`} className="card" key={index}>
-            <img src={`https://image.tmdb.org/t/p/w500`+card.poster_path} />
-            <p>{card.original_title}</p>
-          </Link>
-        ))}
-      </div>
-    </div>
-  )
-}
+    <div className="title-cards">
+      <h2>{title || "Popular on Netflix"}</h2>
 
-export default TitleCards
+      {/* LEFT ARROW */}
+      <button className="arrow left" onClick={scrollLeft}>
+        ‹
+      </button>
+
+      {/* CARD LIST */}
+      <div
+        className="card-list"
+        ref={cardsRef}
+        onMouseDown={startDrag}
+        onMouseLeave={stopDrag}
+        onMouseUp={stopDrag}
+        onMouseMove={onDrag}
+      >
+        {apiData.map(
+          (card) =>
+            card.poster_path && (
+              <Link
+                to={`/player/${card.id}`}
+                className="card"
+                key={card.id}
+              >
+                <img
+                  src={`https://image.tmdb.org/t/p/w500${card.poster_path}`}
+                  alt={card.original_title}
+                />
+                <p>{card.original_title}</p>
+              </Link>
+            )
+        )}
+      </div>
+
+      {/* RIGHT ARROW */}
+      <button className="arrow right" onClick={scrollRight}>
+        ›
+      </button>
+    </div>
+  );
+};
+
+export default TitleCards;
